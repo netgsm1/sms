@@ -122,7 +122,7 @@ class SmsSend
      );
       
         
-         $url= "https://api.netgsm.com.tr/sms/report/?usercode=".$this->username."&password=".$this->password."&bulkid=".$data['bulkid']."&type=".$type."&status=".$data['status']."&bastar=".$data['bastar']."&bittar=".$data['bittar']."&version=2&telno=".$data['telno'];     
+         $url= "https://api.netgsm.com.tr/sms/report?usercode=".$this->username."&password=".$this->password."&bulkid=".$data['bulkid']."&type=".$type."&status=".$data['status']."&bastar=".$data['bastar']."&bittar=".$data['bittar']."&version=2&telno=".$data['telno'];     
         
          $ch = curl_init($url);
          curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);

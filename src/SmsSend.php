@@ -102,7 +102,7 @@ class SmsSend
         11=>"Operatör tarafından kabul edilmemiş olanlar",
         12=>"Gönderim hatası olanlar",
         13=>"Mükerrer olanlar",
-        15=>"Mükerrer olanlar",
+        15=>"Gönderilen numara kara listede",
         16=>"İYS Ret",
         17=>"İYS Hatası",
         100=>"Tüm mesaj durumları",

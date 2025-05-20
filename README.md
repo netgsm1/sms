@@ -259,6 +259,18 @@ Gönderilen mesajların son 3 aya kadar raporlarını sorguyarak; iletim durumla
 <td>Mükerrer olanlar</td>
 </tr>
 <tr>
+<td><code>15</code></td>
+<td>Gönderilen numara kara listede</td>
+</tr>
+<tr>
+<td><code>16</code></td>
+<td>İYS Ret</td>
+</tr>
+<tr>
+<td><code>17</code></td>
+<td>İYS Hatası</td>
+</tr>
+<tr>
 <td><code>100</code></td>
 <td>Tüm mesaj durumları</td>
 </tr>

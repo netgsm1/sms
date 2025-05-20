@@ -8,7 +8,7 @@ Netgsm Sms paket aboneliği bulunan kullanıcılarımız için composer paketidi
  Netgsm API Servisi ile alakalı tüm sorularınızı ve önerilerinizi teknikdestek@netgsm.com.tr adresine iletebilirsiniz.
 ### Supported Laravel Versions
 
-Laravel 6.x, Laravel 7.x, Laravel 8.x, Laravel 9.x, Laravel 10.x
+Laravel 6.x, Laravel 7.x, Laravel 8.x, Laravel 9.x, Laravel 10.x, Laravel 12.x.
 
 ### Supported Lumen Versions
 
@@ -303,51 +303,7 @@ Array
     [aciklama] => Arama kriterlerinize göre listelenecek kayıt olmadığını ifade eder.
 )
 ```
-### SMS İPTALİ
 
-İleri tarihe zamanlanmış SMS'lerinizi iptal edebilirsiniz ya da görev zamanını değiştirebilirsiniz.  
-
-<table width="300">
-  <th>Parametre</th>
-  <th>Anlamı</th>
-  <tr>
-    <td><b> type=0</b> </td>
-    <td> gönderilirse görev iptal edilir. </td>
-    
-  </tr>
-  <tr>
-    <td><b> type=1</b> </td>
-    <td> gönderilip startdate stopdate girilirse güncelleme işlemi yapılır   </td>
-  </tr>
-  
- 
-</table>  
-
-```php
-        $sms=new SmsSend;
-        $data=array('bulkid'=>'1311176624','startdate'=>'180220230100','stopdate'=>'180220231000','type'=>1);
-        //type=0 gönderilirse  startdate ve stopdate gönderilmesine gerek yoktur.
-        //type=1 gönderilirse stardate ve stopdate değerleri güncellenebilir.
-        $sonuc=$sms->smsiptal($data);
-        dd($sonuc);
-      
-```  
-#### Başarılı istek sonuç
-```php
-Array
-(
-    [aciklama] => İleri zamanlı görevinizin başarılı bir şekilde iptal edilğini ifade eder.
-    [code] => 00
-)
-```
-#### Başarısız istek sonuç
-```php
-Array
-(
-    [aciklama] => Baslangiç ve bitis tarihleri arasindaki fark en az 1 , en fazla 21 saat olmalidir.
-    [code] => 60
-)
-```
 ### GELEN SMS SORGULAMA
 
 Aboneliğinizde bulunan Paket - Kampanya bilgilerine bu servisten ulaşabilirsiniz.  
@@ -460,99 +416,6 @@ Array
     [aciklama] => Geçersiz tip gönderimi
 )
 ```
-### FLASH SMS
-
-Gönderdiğiniz SMS'lerin kullanıcılarınızın cep telefonu ekranında bildirim olarak gösterilmesidir.  
-Abone numaranızın kurumsal olması gereklidir.
-
-<table>
-<thead>
-<tr>
-<th>Parametre</th>
-<th>Anlamı</th>
-</tr>
-</thead>
-<tbody>
-
-<tr>
-<td><code>header</code></td>
-<td>Sistemde tanımlı olan mesaj başlığınızdır (gönderici adınız). En az 3, en fazla 11 karakterden oluşur.</td>
-
-</tr>
-<tr>
-<td><code>message</code></td>
-<td>SMS metninin yer alacağı alandır.Nn sms gönderimlerinde array olarak gönderilmelidir.</td>
-
-</tr>
-<tr>
-<td><code>gsm[ ]</code></td>
-<td>SMS in gideceği numaraları temsil eder array gönderilmeli</td>
-
-</tr>
- <tr>
-<td><code>filter/code></td>
-<td>Ticari içerikli SMS gönderimlerinde bu parametreyi kullanabilirsiniz. Ticari içerikli bireysele gönderilecek numaralar için İYS kontrollü gönderimlerde ise "11" değerini, tacire gönderilecek İYS kontrollü gönderimlerde ise "12" değerini almalıdır. null gönderildiği taktirde filtre uygulanmadan gönderilecektir.İstek yapılırken gönderilmesi zorunludur. Ticari içerikli ileti gönderimi yapmıyorsanız 0 gönderilmelidir.</td>
-
-</tr>
- <tr>
-<td><code>appkey/code></td>
-<td>Geliştirici hesabınızdan yayınlanan uygulamanıza ait id bilgisi.</td>
-
-</tr>
-<tr>
-<td><code>encoding</code></td>
-<td>Türkçe karakter desteği isteniyorsa bu alana TR girilmeli, istenmiyorsa null olarak gönderilmelidir. SMS boyu hesabı ve ücretlendirme bu parametreye bağlı olarak değişecektir.</td>
-
-</tr>
-<tr>
-<td><code>startdate</code></td>
-<td>Gönderime başlayacağınız tarih. (ddMMyyyyHHmm) * Boş bırakılırsa mesajınız hemen gider.</td>
-
-</tr>
-<tr>
-<td><code>stopdate</code></td>
-<td>İki tarih arası gönderimlerinizde bitiş tarihi.(ddMMyyyyHHmm)* Boş bırakılırsa sistem başlangıç tarihine 21 saat ekleyerek otomatik gönderir.</td>
-
-</tr>
-
-
-</tbody>
-</table>
-
-```php
-        use Netgsm\Sms\SmsSend;
-       	$data=array('message'=>'Test','gsm'=>['553xxxxxxx','553xxxxxxx'],
-                    'header'=>'312xxxxxxx',
-                    'encoding'=>'tr',
-                    'startdate'=>'170220231418',
-                    'stopdate'=>'170220231425',
-                    'filter'=>0,
-                    'bayikodu'=>132,
-                    'appkey'=>'hsfxa-xhytf21-....',
-        );
-        $islem=new SmsSend;
-        $sonuc=$islem->flashSms($data);
-        dd($sonuc);
-      
-``` 
-#### Başarılı istek örnek sonuç
-```php
-Array
-(
-    [aciklama] => Gönderdiğiniz SMS'inizin başarıyla sistemimize ulaştığını gösterir. 00 : Mesajınızın tarih formatına ilişkin bir hata olmadığı anlamına gelir. 123xxxxxx : Gönderilen SMSe ait ID bilgisi, Bu görevid (bulkid) niz ile mesajınızın iletim raporunu sorguyabilirsiniz.
-    [code] => 00
-    [bulkid] => 1311191776
-)
-```
-#### Başarısız istek örnek sonuç
-```php
-Array
-(
-    [code] => 30
-    [aciklama] => Geçersiz kullanıcı adı , şifre veya kullanıcınızın API erişim izninin olmadığını gösterir.Ayrıca eğer API erişiminizde IP sınırlaması yaptıysanız ve sınırladığınız ip dışında gönderim sağlıyorsanız 30 hata kodunu alırsınız. API erişim izninizi veya IP sınırlamanızı , web arayüzden; sağ üst köşede bulunan ayarlar> API işlemleri menüsunden kontrol edebilirsiniz.
-)
-```
-=======
 
 # Laravel & Symfony Netgsm Sms Entegrasyonu
 
@@ -569,12 +432,10 @@ Netgsm Sms paket aboneliği bulunan kullanıcılarımız için composer paketidi
     - [n:n Sms Gönderimi](#nn-sms-gönderimi)
     - [Tekli Sms Gönderimi](#tekli̇-sms-gönderi̇mi̇)
     - [Sms Sorgulama](#sms-sorgulama)
-    - [Sms İptali](#sms-i̇ptali̇)
     - [Gelen Sms Sorgulama](#gelen-sms-sorgulama)
     - [Gelen Sms Webhook](#gelen-sms-webhook)
     - [Başlık(Gönderi̇ci̇ Adi) Sorgulama](#başlikgönderi̇ci̇-adi-sorgulama)
     - [Kara Liste](#kara-liste)
-    - [Flash Sms](#flash-sms)
 
 
 
@@ -583,7 +444,7 @@ Netgsm Sms paket aboneliği bulunan kullanıcılarımız için composer paketidi
  Netgsm API Servisi ile alakalı tüm sorularınızı ve önerilerinizi teknikdestek@netgsm.com.tr adresine iletebilirsiniz.
 ### Supported Laravel Versions
 
-Laravel 6.x, Laravel 7.x, Laravel 8.x, Laravel 9.x, Laravel 10.x
+Laravel 6.x, Laravel 7.x, Laravel 8.x, Laravel 9.x, Laravel 10.x, Laravel 12.x
 
 ### Supported Lumen Versions
 
@@ -878,51 +739,7 @@ Array
     [aciklama] => Arama kriterlerinize göre listelenecek kayıt olmadığını ifade eder.
 )
 ```
-### SMS İPTALİ
 
-İleri tarihe zamanlanmış SMS'lerinizi iptal edebilirsiniz ya da görev zamanını değiştirebilirsiniz.  
-
-<table width="300">
-  <th>Parametre</th>
-  <th>Anlamı</th>
-  <tr>
-    <td><b> type=0</b> </td>
-    <td> gönderilirse görev iptal edilir. </td>
-    
-  </tr>
-  <tr>
-    <td><b> type=1</b> </td>
-    <td> gönderilip startdate stopdate girilirse güncelleme işlemi yapılır   </td>
-  </tr>
-  
- 
-</table>  
-
-```php
-        $sms=new SmsSend;
-        $data=array('bulkid'=>'1311176624','startdate'=>'180220230100','stopdate'=>'180220231000','type'=>1);
-        //type=0 gönderilirse  startdate ve stopdate gönderilmesine gerek yoktur.
-        //type=1 gönderilirse stardate ve stopdate değerleri güncellenebilir.
-        $sonuc=$sms->smsiptal($data);
-        dd($sonuc);
-        
-```  
-#### Başarılı istek sonuç
-```php
-Array
-(
-    [aciklama] => İleri zamanlı görevinizin başarılı bir şekilde iptal edilğini ifade eder.
-    [code] => 00
-)
-```
-#### Başarısız istek sonuç
-```php
-Array
-(
-    [aciklama] => Baslangiç ve bitis tarihleri arasindaki fark en az 1 , en fazla 21 saat olmalidir.
-    [code] => 60
-)
-```
 ### GELEN SMS SORGULAMA
 
 Abone numaranıza gelen SMS'leri sorgulayabilirsiniz.
@@ -1083,96 +900,3 @@ Array
     [aciklama] => Geçersiz tip gönderimi
 )
 ```
-### FLASH SMS
-
-Gönderdiğiniz SMS'lerin kullanıcılarınızın cep telefonu ekranında bildirim olarak gösterilmesidir.  
-Abone numaranızın kurumsal olması gereklidir.
-
-<table>
-<thead>
-<tr>
-<th>Parametre</th>
-<th>Anlamı</th>
-</tr>
-</thead>
-<tbody>
-
-<tr>
-<td><code>header</code></td>
-<td>Sistemde tanımlı olan mesaj başlığınızdır (gönderici adınız). En az 3, en fazla 11 karakterden oluşur.</td>
-
-</tr>
-<tr>
-<td><code>message</code></td>
-<td>SMS metninin yer alacağı alandır.Nn sms gönderimlerinde array olarak gönderilmelidir.</td>
-
-</tr>
-<tr>
-<td><code>gsm[ ]</code></td>
-<td>SMS in gideceği numaraları temsil eder array gönderilmeli</td>
-
-</tr>
- <tr>
-<td><code>filter/code></td>
-<td>Ticari içerikli SMS gönderimlerinde bu parametreyi kullanabilirsiniz. Ticari içerikli bireysele gönderilecek numaralar için İYS kontrollü gönderimlerde ise "11" değerini, tacire gönderilecek İYS kontrollü gönderimlerde ise "12" değerini almalıdır. null gönderildiği taktirde filtre uygulanmadan gönderilecektir.İstek yapılırken gönderilmesi zorunludur. Ticari içerikli ileti gönderimi yapmıyorsanız 0 gönderilmelidir.</td>
-
-</tr>
- <tr>
-<td><code>appkey/code></td>
-<td>Geliştirici hesabınızdan yayınlanan uygulamanıza ait id bilgisi.</td>
-
-</tr>
-<tr>
-<td><code>encoding</code></td>
-<td>Türkçe karakter desteği isteniyorsa bu alana TR girilmeli, istenmiyorsa null olarak gönderilmelidir. SMS boyu hesabı ve ücretlendirme bu parametreye bağlı olarak değişecektir.</td>
-
-</tr>
-<tr>
-<td><code>startdate</code></td>
-<td>Gönderime başlayacağınız tarih. (ddMMyyyyHHmm) * Boş bırakılırsa mesajınız hemen gider.</td>
-
-</tr>
-<tr>
-<td><code>stopdate</code></td>
-<td>İki tarih arası gönderimlerinizde bitiş tarihi.(ddMMyyyyHHmm)* Boş bırakılırsa sistem başlangıç tarihine 21 saat ekleyerek otomatik gönderir.</td>
-
-</tr>
-
-
-</tbody>
-</table>
-
-```php
-        use Netgsm\Sms\SmsSend;
-       	$data=array('message'=>'Test','gsm'=>['553xxxxxxx','553xxxxxxx'],
-                    'header'=>'312xxxxxxx',
-                    'encoding'=>'tr',
-                    'startdate'=>'170220231418',
-                    'stopdate'=>'170220231425',
-                    'filter'=>0,
-                    'bayikodu'=>132,
-                    'appkey'=>'hsfxa-xhytf21-....',
-        );
-        $islem=new SmsSend;
-        $sonuc=$islem->flashSms($data);
-        dd($sonuc);
-        
-``` 
-#### Başarılı istek örnek sonuç
-```php
-Array
-(
-    [aciklama] => Gönderdiğiniz SMS'inizin başarıyla sistemimize ulaştığını gösterir. 00 : Mesajınızın tarih formatına ilişkin bir hata olmadığı anlamına gelir. 123xxxxxx : Gönderilen SMSe ait ID bilgisi, Bu görevid (bulkid) niz ile mesajınızın iletim raporunu sorguyabilirsiniz.
-    [code] => 00
-    [bulkid] => 1311191776
-)
-```
-#### Başarısız istek örnek sonuç
-```php
-Array
-(
-    [code] => 30
-    [aciklama] => Geçersiz kullanıcı adı , şifre veya kullanıcınızın API erişim izninin olmadığını gösterir.Ayrıca eğer API erişiminizde IP sınırlaması yaptıysanız ve sınırladığınız ip dışında gönderim sağlıyorsanız 30 hata kodunu alırsınız. API erişim izninizi veya IP sınırlamanızı , web arayüzden; sağ üst köşede bulunan ayarlar> API işlemleri menüsunden kontrol edebilirsiniz.
-)
-```
->>>>>>> 606d569e1950e7b988a2073eaae9e031c79d926a

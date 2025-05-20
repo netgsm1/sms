@@ -38,7 +38,7 @@ class SmsSend
       
         
     }
-    public function smsSorgulama($data):array
+    public function smsSorgulama($data)
     {
         
       
@@ -102,6 +102,9 @@ class SmsSend
         11=>"Operatör tarafından kabul edilmemiş olanlar",
         12=>"Gönderim hatası olanlar",
         13=>"Mükerrer olanlar",
+        15=>"Mükerrer olanlar",
+        16=>"İYS Ret",
+        17=>"İYS Hatası",
         100=>"Tüm mesaj durumları",
         103=>"Başarısız Görev (Bu görevin tamamı başarısız olmuştur.)",
 
@@ -315,6 +318,8 @@ class SmsSend
         return $res;
         
     }
+
+    /*
     public function flashSms($data):array
     {
 
@@ -411,6 +416,7 @@ class SmsSend
         
         return $res;
     }
+    */
     public function smsGonderNN($msGsm,$data):array
     {
        
@@ -514,6 +520,7 @@ class SmsSend
         return $res;
 		
     }
+    /*
     public function smsIptal($data):array
     {
      
@@ -582,7 +589,9 @@ class SmsSend
 
         return $response;
     }
+    */
 
+    /*
     public function kredisorgu():array
     {
         $xmlData='<?xml version="1.0"?>
@@ -623,6 +632,8 @@ class SmsSend
         return $sonuc;
 
     }
+    */
+    /*
     public function paketsorgu():array
     {
         
@@ -684,6 +695,7 @@ class SmsSend
          }
          return $response;
     }
+    */
     public function gelensms($data):array
     {
         if(!isset($data['startdate'])){

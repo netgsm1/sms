@@ -1,914 +1,303 @@
+# Netgsm SMS API v3 PHP İstemcisi
 
-# Laravel & Symfony Netgsm Sms Entegrasyonu
+Netgsm [SMS API v3](https://api-docs.netgsm.com.tr/) için PHP istemcisi. Laravel, Symfony ya da düz PHP
+projelerinde kullanılabilir.
 
-Netgsm Sms paket aboneliği bulunan kullanıcılarımız için composer paketidir.
+> **v2 kullanıyorsanız:** v3.0.0 geriye uyumlu değildir. Mevcut kodunuzu değiştirmek istemiyorsanız
+> `composer.json` dosyanızda `"netgsm/sms": "^2.0"` kısıtını koruyun; 2.x sürümleri çalışmaya devam eder.
+> Geçiş için [v2'den v3'e geçiş](#v2den-v3e-geçiş) bölümüne bakın.
 
-# İletişim & Destek
+## Gereksinimler
 
- Netgsm API Servisi ile alakalı tüm sorularınızı ve önerilerinizi teknikdestek@netgsm.com.tr adresine iletebilirsiniz.
-### Supported Laravel Versions
+- PHP 8.1 veya üzeri, `ext-curl` ve `ext-json`
+- SMS API v3 erişimi açık bir Netgsm hesabı: abone numarası, API alt kullanıcısı şifresi ve onaylı bir
+  gönderici adı (başlık). Hesap ayarları için:
+  [Bilgi Bankası, API ile SMS](https://bilgibankasi.netgsm.com.tr/sms/toplu-sms/api-ile-sms)
 
-Laravel 6.x, Laravel 7.x, Laravel 8.x, Laravel 9.x, Laravel 10.x, Laravel 12.x.
+## Kurulum
 
-### Supported Lumen Versions
-
-Lumen 6.x, Lumen 7.x, Lumen 8.x, Lumen 9.x, 
-
-### Supported Symfony Versions
-
-Symfony 4.x, Symfony 5.x, Symfony 6.x
-
-### Supported Php Versions
-
-PHP 7.2.5 ve üzeri
-
-# Doküman 
-https://www.netgsm.com.tr/dokuman/
- API Servisi için hazırlanmış kapsamlı dokümana ve farklı yazılım dillerinde örnek amaçlı hazırlanmış örnek kodlamalara 
- [https://www.netgsm.com.tr/dokuman](https://www.netgsm.com.tr/dokuman) adresinden ulaşabilirsiniz.  
-
-### Kurulum
-
-<b>composer require netgsm/sms </b>
-
-.env  dosyası içerisinde NETGSM ABONELİK bilgileriniz tanımlanması zorunludur.  
-
-<b>NETGSM_USERCODE=""</b>  
-<b>NETGSM_PASSWORD=""</b>  
-<b>NETGSM_HEADER=""</b>  
-
-## PARAMETRELER
-
-<table width="300">
-  <th>Parametre</th>
-  <th>Anlamı</th>
-  <tr>
-    <td><b> encoding</b> </td>
-    <td> Türkçe karakter desteği isteniyorsa bu alana TR girilmeli, istenmiyorsa null olarak gönderilmelidir. SMS boyu hesabı ve ücretlendirme bu parametreye bağlı olarak değişecektir. </td>
-    
-  </tr>
-  <tr>
-    <td><b> startdate</b> </td>
-    <td> Gönderime başlayacağınız tarih. (ddMMyyyyHHmm) * Boş bırakılırsa mesajınız hemen gider.  </td>
-  </tr>
-  <tr>
-    <td><b> stopdate</b> </td>
-    <td>İki tarih arası gönderimlerinizde bitiş tarihi.(ddMMyyyyHHmm)* Boş bırakılırsa sistem başlangıç tarihine 21 saat ekleyerek otomatik gönderir.  </td>
-  </tr>
-  <tr>
-    <td><b> bayikodu </b> </td>
-    <td> Bayi üyesi iseniz bayinize ait kod   </td>
-  </tr>
-  <tr>
-    <td><b> filter </b> </td>
-    <td> Ticari içerikli SMS gönderimlerinde bu parametreyi kullanabilirsiniz. Ticari içerikli bireysele gönderilecek numaralar için İYS kontrollü gönderimlerde ise "11" değerini, tacire gönderilecek İYS kontrollü gönderimlerde ise "12" değerini almalıdır. null gönderildiği taktirde filtre uygulanmadan gönderilecektir.İstek yapılırken gönderilmesi zorunludur. Ticari içerikli ileti gönderimi yapmıyorsanız 0 gönderilmelidir.    </td>
-  </tr>
-  <tr>
-    <td><b> appkey </b> </td>
-    <td> Geliştirici hesabınızdan yayınlanan uygulamanıza ait id bilgisi.    </td>
-  </tr>
-  <tr>
-    <td><b> bulkid </b> </td>
-    <td> başarılı mesaj gönderimlerinizde dönen görevid (bulkid) nizdir.    </td>
-  </tr>
-  
-</table> 
-
-### 1:n SMS GÖNDERİMİ
-
-SMS'lerinizi 1:n yöntemiyle birden fazla numaraya aynı anda tek gönderimde iletebilirsiniz.
-
-```php
-        use Netgsm\Sms\SmsSend;
-        $data=array(
-            'message'=>'test mesajı',
-            'no'=>['553xxxxxxx','553xxxxxxx'],
-            'header'=>'MESAJ_BASLİK',
-            'filter'=>0,
-            'encoding'=>'tr',
-            'startdate'=>'170220231000',
-            'stopdate'=>'170220231200',
-            'bayikodu'=>'1312...',
-            'appkey'=>'A123-F3DASD-XXXXX....'
-        );
-        $sms= new SmsSend;
-        $cevap=$sms->smsGonder($data);
-        dd($cevap);
-        
-``` 
-#### Başarılı istek örnek 
-```php
-Array
-(
-    [code] => 00
-    [bulkid] => 1311033503
-    [durum] => Gönderdiğiniz SMS'inizin başarıyla sistemimize ulaştığını gösterir. 00 : Mesajınızın tarih formatına ilişkin bir hata olmadığı anlamına gelir. 123xxxxxx : Gönderilen SMSe ait ID bilgisi, Bu görevid (bulkid) niz ile mesajınızın iletim raporunu sorguyabilirsiniz.
-)
+```bash
+composer require netgsm/sms
 ```
 
-#### Başarısız istek örnek 
-```php
-Array
-(
-    [code] => 30
-    [durum] => Geçersiz kullanıcı adı , şifre veya kullanıcınızın API erişim izninin olmadığını gösterir.Ayrıca eğer API erişiminizde IP sınırlaması yaptıysanız ve sınırladığınız ip dışında gönderim sağlıyorsanız 30 hata kodunu alırsınız. API erişim izninizi veya IP sınırlamanızı , web arayüzden; sağ üst köşede bulunan ayarlar> API işlemleri menüsunden kontrol edebilirsiniz.
-)
+Kimlik bilgilerini `.env` dosyanızda tutun; koda ya da sürüm kontrolüne yazmayın:
+
+```dotenv
+NETGSM_USERNAME=850xxxxxxx     # abone numarası
+NETGSM_PASSWORD=               # API alt kullanıcısının şifresi
+NETGSM_SENDER=BASLIGINIZ       # onaylı gönderici adı, kayıtlı hâliyle birebir
 ```
 
-### n:n SMS GÖNDERİMİ
-
-Birden fazla farklı SMS içeriğini farklı numaralara aynı anda tek pakette gönderebilirsiniz. 
+## Hızlı başlangıç
 
 ```php
-        use Netgsm\Sms\SmsSend;
-        $msGsm=array(
-                    array('gsm'=>'553XXXXXX','message'=>'MESAJ METNİ 1'),
-                    array('gsm'=>'553XXXXXX','message'=>'MESAJ METNİ 2')
-                );
-        $data=array('startdate'=>'170220231210','stopdate'=>'170220231300','header'=>'BASLIGINIZ','filter'=>0);
-        $sms=new SmsSend;
-        $cevap=$sms->smsGonderNN($msGsm,$data);
-        dd($cevap);
-        
-```
-#### Başarılı istek örnek 
-```php
-Array
-(
-    [code] => 00
-    [bulkid] => 1311033503
-    [durum] => Gönderdiğiniz SMS'inizin başarıyla sistemimize ulaştığını gösterir. 00 : Mesajınızın tarih formatına ilişkin bir hata olmadığı anlamına gelir. 123xxxxxx : Gönderilen SMSe ait ID bilgisi, Bu görevid (bulkid) niz ile mesajınızın iletim raporunu sorguyabilirsiniz.
-)
-```
-#### Başarısız istek örnek 
-```php
-Array
-(
-    [code] => 30
-    [durum] => Geçersiz kullanıcı adı , şifre veya kullanıcınızın API erişim izninin olmadığını gösterir.Ayrıca eğer API erişiminizde IP sınırlaması yaptıysanız ve sınırladığınız ip dışında gönderim sağlıyorsanız 30 hata kodunu alırsınız. API erişim izninizi veya IP sınırlamanızı , web arayüzden; sağ üst köşede bulunan ayarlar> API işlemleri menüsunden kontrol edebilirsiniz.
-)
-```
-
-### TEKLİ SMS GÖNDERİMİ
-
-
-
-```php
-        use Netgsm\Sms\SmsSend;
-        $sms=new SmsSend;
-        $data=array(
-            'msgheader'=>"",
-            'gsm'=>'553XXXXXXX',
-            'message'=>'Merhaba',
-            'filter'=>'0',
-            'startdate'=>'270120230950',
-            'stopdate'=>'270120231030',
-        );
-
-        $sonuc=$sms->smsgonder1_1($data);
-        dd($sonuc);
-       
-```
-#### Başarılı istek örnek
-```php
-Array
-(
-    [code] => 00
-    [aciklama] => Görevinizin tarih formatinda bir hata olmadığını gösterir.
-    [bulkid] => 1311044635
-)
-```
-#### Başarısız istek örnek
-```php
-Array
-(
-    [code] => 40
-    [aciklama] => Mesaj başlığınızın (gönderici adınızın) sistemde tanımlı olmadığını ifade eder. Gönderici adlarınızı API ile sorgulayarak kontrol edebilirsiniz.
-)
-```
-### SMS SORGULAMA
-
-Gönderilen mesajların son 3 aya kadar raporlarını sorguyarak; iletim durumlarını öğrenebilirsiniz.
-<table width="300">
-  <th>Parametre</th>
-  <th>Anlamı</th>
-  <tr>
-   <td>bulkid</td>
-   <td>başarılı mesaj gönderimlerinizde dönen görevid (bulkid) nizdir.</td>
- </tr>
-  <tr>
-    <td><b> type=0</b> </td>
-    <td> Tek BulkID sorgular.  </td>
-    
-  </tr>
-  <tr>
-    <td><b> type=2</b> </td>
-    <td> İki tarih arasında sorgulama yapar.   </td>
-  </tr>
- <tr>
-<td>bastar</td>
-<td>İki tarih arası sorgulamalarınızda başlangıç tarihidir(ddmmyyyy)</td>
-</tr>
- <tr>
-<td>bittar</td>
-<td>İki tarih arası sorgulamalarınızda bitiş tarihidir(ddmmyyyy) Bütün numaralar birbirlerinden &lt;BR&gt; kodu ile ayrılmiştir.</td>
-</tr>
-  
-
-</table>  
-
- <b>status</b>
-<table>
-<thead>
-<tr>
-<th>Kod</th>
-<th>Anlamı</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>0</code></td>
-<td>İletilmeyi bekleyenler</td>
-</tr>
-<tr>
-<td><code>1</code></td>
-<td>İletilmiş olanlar</td>
-</tr>
-<tr>
-<td><code>2</code></td>
-<td>Zaman aşımına uğramış olanlar</td>
-</tr>
-<tr>
-<td><code>3</code></td>
-<td>Hatalı veya kısıtlı numara</td>
-</tr>
-<tr>
-<td><code>4</code></td>
-<td>Operatöre gönderilemedi</td>
-</tr>
-<tr>
-<td><code>11</code></td>
-<td>Operatör tarafından kabul edilmemiş olanlar</td>
-</tr>
-<tr>
-<td><code>12</code></td>
-<td>Gönderim hatası olanlar</td>
-</tr>
-<tr>
-<td><code>13</code></td>
-<td>Mükerrer olanlar</td>
-</tr>
-<tr>
-<td><code>15</code></td>
-<td>Gönderilen numara kara listede</td>
-</tr>
-<tr>
-<td><code>16</code></td>
-<td>İYS Ret</td>
-</tr>
-<tr>
-<td><code>17</code></td>
-<td>İYS Hatası</td>
-</tr>
-<tr>
-<td><code>100</code></td>
-<td>Tüm mesaj durumları</td>
-</tr>
-<tr>
-<td><code>103</code></td>
-<td>Başarısız Görev (Bu görevin tamamı başarısız olmuştur.)</td>
-</tr>
-</tbody>
-</table>
-
-```php
-        use Netgsm\Sms\SmsSend;
-        $sms=new SmsSend;
-        $data=array('bulkid'=>'1311042194','bastar'=>'010220231500','bittar'=>'070220231500','status'=>'100','type'=>2);
-        //bulkid girildiğinde type 0 gönderilmelidir.type=0 girildiğinde bastar ve bittar girilmesine gerek bulunmamaktadır.
-        //bastar ve bittar girildiğinde type 2 gönderilmelidir.
-        $sonuc=$sms->smsSorgulama($data);
-        dd($sonuc);
-       
-```  
-
-#### Başarılı istek sonuç
-```php
-Array
-(
-    [durum] => İletilmiş olanlar
-    [durumcode] => 1
-    [operator] => Türk Telekom
-    [operatorcode] => 20
-    [hataaciklama] => Hata Yok.
-    [hatakod] => 0
-    [cepno] => 905531105200
-    [mesajboy] => 1
-    [tarih] => 23.01.2023 09:35:00
-)
-```
-#### Başarısız istek sonuç
-```php
-Array
-(
-    [code] => 60
-    [aciklama] => Arama kriterlerinize göre listelenecek kayıt olmadığını ifade eder.
-)
-```
-
-### GELEN SMS SORGULAMA
-
-Aboneliğinizde bulunan Paket - Kampanya bilgilerine bu servisten ulaşabilirsiniz.  
-
-```php
-        use Netgsm\Sms\SmsSend;	
-        $islem=new SmsSend;
-        $data=array('startdate'=>'120120230940','stopdate'=>'230120231400');
-        $sonuc=$islem->gelensms($data);
-        dd($sonuc);
-      
-```
-#### Başarılı istek örnek sonuç
-```php
-Array
-(
-    [0] => Array
-        (
-            [telno] => 553xxxxxxx 
-            [mesaj] =>  mesaj_içerigi
-            [tarih] =>  12.01.2023 09:43:51
-        )
-
-    [1] => Array
-        (
-            [telno] => 553xxxxxxx 
-            [mesaj] =>  mesaj_içerigi
-            [tarih] =>  12.01.2023 09:43:04
-        )
-
-)
-```
-#### Başarısız istek örnek sonuç
-```php
-Array
-(
-    [code] => 60
-    [aciklama] => Arama kiterlerindeki startdate ve stopdate zaman farkının 30 günden fazla olduğunu ifade eder.
-)
-```
-### BAŞLIK(GÖNDERİCİ ADI) SORGULAMA
-
-Hesabınızda tanımlı gönderici adlarını(mesaj başlığı)  sorgulama modülüdür. 
-
-```php
-        use Netgsm\Sms\SmsSend;
-        $baslik=new SmsSend;
-        $sonuc=$baslik->basliksorgu();
-        dd($sonuc);
-        
-```
-#### Başarılı istek örnek sonuç
-```php
-Array
-(
-    [msgheader] => Array
-        (
-            [0] => 850xxxxxxx
-            [1] => HEADER_BILGISI
-        )
-
-)
-```
-#### Başarısız istek örnek sonuç
-```php
-Array
-(
-    [code] => 30
-    [error] => Kullanici bilgisi bulunamadi
-)
-```
-### Kara Liste
-
-Blacklist olarak da bilinen SMS gönderimi istenmeyen yasaklı numaralar listeniz için, belirlediğiniz numaraları Kara Listeye Ekleme / Kara Listeden Çıkarma modülünü kullanabilirsiniz. Kara Listede bulunan numaralara hesabınızdan SMS gönderilmez.Bu kontrol Netgsm tarafında sağlanır.  
-
-<table width="300">
-  <th>Parametre</th>
-  <th>Anlamı</th>
-  <tr>
-    <td><b> type</b> </td>
-    <td>1 değeri ile Kara listeye ekleme, 2 değeri ile Kara listeden çıkarma işlemi gerçekleşir. İstek yapılırken gönderilmesi zorunludur. </td>
-    
-  </tr>
-  
-  
- 
-</table>  
-
-```php
-        use Netgsm\Sms\SmsSend;
-       	$karaliste=new SmsSend;
-        $data=array('number'=>['553xxxxxxx','553xxxxxxx'],'tip'=>2);
-        $sonuc=$karaliste->karaliste($data);
-        dd($sonuc);
-       
-```  
-#### Başarılı istek örnek sonuç
-```php
-Array
-(
-    [code] => OK
-    [aciklama] => Kara Listeye Ekleme / Çıkarma işleminde bir hata olmadığını gösterir.
-)
-```
-#### Başarısız istek örnek sonuç
-```php
-Array
-(
-    [code] => 60
-    [aciklama] => Geçersiz tip gönderimi
-)
-```
-
-# Laravel & Symfony Netgsm Sms Entegrasyonu
-
-Netgsm Sms paket aboneliği bulunan kullanıcılarımız için composer paketidir.
-
-## İçindekiler
-
-- [Kurulum](#kurulum)
-- [İletişim & Destek](#destek)
-- [Supported](#Supported-Laravel-Versions)
-- [Doküman](#doküman)
-    - [Kurulum](#kurulum)
-    - [1:n Sms Gönderimi](#1n-sms-gönderimi)
-    - [n:n Sms Gönderimi](#nn-sms-gönderimi)
-    - [Tekli Sms Gönderimi](#tekli̇-sms-gönderi̇mi̇)
-    - [Sms Sorgulama](#sms-sorgulama)
-    - [Gelen Sms Sorgulama](#gelen-sms-sorgulama)
-    - [Gelen Sms Webhook](#gelen-sms-webhook)
-    - [Başlık(Gönderi̇ci̇ Adi) Sorgulama](#başlikgönderi̇ci̇-adi-sorgulama)
-    - [Kara Liste](#kara-liste)
-
-
-
-# Destek
-
- Netgsm API Servisi ile alakalı tüm sorularınızı ve önerilerinizi teknikdestek@netgsm.com.tr adresine iletebilirsiniz.
-### Supported Laravel Versions
-
-Laravel 6.x, Laravel 7.x, Laravel 8.x, Laravel 9.x, Laravel 10.x, Laravel 12.x
-
-### Supported Lumen Versions
-
-Lumen 6.x, Lumen 7.x, Lumen 8.x, Lumen 9.x, 
-
-### Supported Symfony Versions
-
-Symfony 4.x, Symfony 5.x, Symfony 6.x
-
-### Supported Php Versions
-
-PHP 7.2.5 ve üzeri
-
-# Doküman 
-https://www.netgsm.com.tr/dokuman/
- API Servisi için hazırlanmış kapsamlı dokümana ve farklı yazılım dillerinde örnek amaçlı hazırlanmış örnek kodlamalara 
- [https://www.netgsm.com.tr/dokuman](https://www.netgsm.com.tr/dokuman) adresinden ulaşabilirsiniz.  
-
-### Kurulum
-
-<b>composer require netgsm/sms </b>
-
-.env  dosyası içerisinde NETGSM ABONELİK bilgileriniz tanımlanması zorunludur.  
-
-<b>NETGSM_USERCODE=""</b>  
-<b>NETGSM_PASSWORD=""</b>  
-<b>NETGSM_HEADER=""</b>  
-
-## PARAMETRELER
-
-<table width="300">
-  <th>Parametre</th>
-  <th>Anlamı</th>
-  <tr>
-    <td><b> encoding</b> </td>
-    <td> Türkçe karakter desteği isteniyorsa bu alana TR girilmeli, istenmiyorsa null olarak gönderilmelidir. SMS boyu hesabı ve ücretlendirme bu parametreye bağlı olarak değişecektir. </td>
-    
-  </tr>
-  <tr>
-    <td><b> startdate</b> </td>
-    <td> Gönderime başlayacağınız tarih. (ddMMyyyyHHmm) * Boş bırakılırsa mesajınız hemen gider.  </td>
-  </tr>
-  <tr>
-    <td><b> stopdate</b> </td>
-    <td>İki tarih arası gönderimlerinizde bitiş tarihi.(ddMMyyyyHHmm)* Boş bırakılırsa sistem başlangıç tarihine 21 saat ekleyerek otomatik gönderir.  </td>
-  </tr>
-  <tr>
-    <td><b> bayikodu </b> </td>
-    <td> Bayi üyesi iseniz bayinize ait kod   </td>
-  </tr>
-  <tr>
-    <td><b> filter </b> </td>
-    <td> Ticari içerikli SMS gönderimlerinde bu parametreyi kullanabilirsiniz. Ticari içerikli bireysele gönderilecek numaralar için İYS kontrollü gönderimlerde ise "11" değerini, tacire gönderilecek İYS kontrollü gönderimlerde ise "12" değerini almalıdır. null gönderildiği taktirde filtre uygulanmadan gönderilecektir.İstek yapılırken gönderilmesi zorunludur. Ticari içerikli ileti gönderimi yapmıyorsanız 0 gönderilmelidir.    </td>
-  </tr>
-  <tr>
-    <td><b> appkey </b> </td>
-    <td> Geliştirici hesabınızdan yayınlanan uygulamanıza ait id bilgisi.    </td>
-  </tr>
-  <tr>
-    <td><b> bulkid </b> </td>
-    <td> başarılı mesaj gönderimlerinizde dönen görevid (bulkid) nizdir.    </td>
-  </tr>
-  
-</table> 
-
-### 1:n Sms Gönderimi
-
-SMS'lerinizi 1:n yöntemiyle birden fazla numaraya aynı anda tek gönderimde iletebilirsiniz.
-
-```php
-        use Netgsm\Sms\SmsSend;
-        $data=array(
-            'message'=>'test mesajı',
-            'no'=>['553xxxxxxx','553xxxxxxx'],
-            'header'=>'MESAJ_BASLİK',
-            'filter'=>0,
-            'encoding'=>'tr',
-            'startdate'=>'170220231000',
-            'stopdate'=>'170220231200',
-            'bayikodu'=>'1312...',
-            'appkey'=>'A123-F3DASD-XXXXX....'
-        );
-        $sms= new SmsSend;
-        $cevap=$sms->smsGonder($data);
-        dd($cevap);
-        
-``` 
-#### Başarılı istek örnek 
-```php
-Array
-(
-    [code] => 00
-    [bulkid] => 1311033503
-    [durum] => Gönderdiğiniz SMS'inizin başarıyla sistemimize ulaştığını gösterir. 00 : Mesajınızın tarih formatına ilişkin bir hata olmadığı anlamına gelir. 123xxxxxx : Gönderilen SMSe ait ID bilgisi, Bu görevid (bulkid) niz ile mesajınızın iletim raporunu sorguyabilirsiniz.
-)
-```
-
-#### Başarısız istek örnek 
-```php
-Array
-(
-    [code] => 30
-    [durum] => Geçersiz kullanıcı adı , şifre veya kullanıcınızın API erişim izninin olmadığını gösterir.Ayrıca eğer API erişiminizde IP sınırlaması yaptıysanız ve sınırladığınız ip dışında gönderim sağlıyorsanız 30 hata kodunu alırsınız. API erişim izninizi veya IP sınırlamanızı , web arayüzden; sağ üst köşede bulunan ayarlar> API işlemleri menüsunden kontrol edebilirsiniz.
-)
-```
-
-### n:n Sms Gönderimi
-
-Birden fazla farklı SMS içeriğini farklı numaralara aynı anda tek pakette gönderebilirsiniz. 
-
-```php
-        use Netgsm\Sms\SmsSend;
-        $msGsm=array(
-                    array('gsm'=>'553XXXXXX','message'=>'MESAJ METNİ 1'),
-                    array('gsm'=>'553XXXXXX','message'=>'MESAJ METNİ 2')
-                );
-        $data=array('startdate'=>'170220231210','stopdate'=>'170220231300','header'=>'BASLIGINIZ','filter'=>0);
-        $sms=new SmsSend;
-        $cevap=$sms->smsGonderNN($msGsm,$data);
-        dd($cevap);
-       
-```
-#### Başarılı istek örnek 
-```php
-Array
-(
-    [code] => 00
-    [bulkid] => 1311033503
-    [durum] => Gönderdiğiniz SMS'inizin başarıyla sistemimize ulaştığını gösterir. 00 : Mesajınızın tarih formatına ilişkin bir hata olmadığı anlamına gelir. 123xxxxxx : Gönderilen SMSe ait ID bilgisi, Bu görevid (bulkid) niz ile mesajınızın iletim raporunu sorguyabilirsiniz.
-)
-```
-#### Başarısız istek örnek 
-```php
-Array
-(
-    [code] => 30
-    [durum] => Geçersiz kullanıcı adı , şifre veya kullanıcınızın API erişim izninin olmadığını gösterir.Ayrıca eğer API erişiminizde IP sınırlaması yaptıysanız ve sınırladığınız ip dışında gönderim sağlıyorsanız 30 hata kodunu alırsınız. API erişim izninizi veya IP sınırlamanızı , web arayüzden; sağ üst köşede bulunan ayarlar> API işlemleri menüsunden kontrol edebilirsiniz.
-)
-```
-
-### TEKLİ SMS GÖNDERİMİ
-
-
-
-```php
-        use Netgsm\Sms\SmsSend;
-        $sms=new SmsSend;
-        $data=array(
-            'msgheader'=>"",
-            'gsm'=>'553XXXXXXX',
-            'message'=>'Merhaba',
-            'filter'=>'0',
-            'startdate'=>'270120230950',
-            'stopdate'=>'270120231030',
-        );
-
-        $sonuc=$sms->smsgonder1_1($data);
-        dd($sonuc);
-       
-```
-#### Başarılı istek örnek
-```php
-Array
-(
-    [code] => 00
-    [aciklama] => Görevinizin tarih formatinda bir hata olmadığını gösterir.
-    [bulkid] => 1311044635
-)
-```
-#### Başarısız istek örnek
-```php
-Array
-(
-    [code] => 40
-    [aciklama] => Mesaj başlığınızın (gönderici adınızın) sistemde tanımlı olmadığını ifade eder. Gönderici adlarınızı API ile sorgulayarak kontrol edebilirsiniz.
-)
-```
-### SMS SORGULAMA
-
-Gönderilen mesajların son 3 aya kadar raporlarını sorguyarak; iletim durumlarını öğrenebilirsiniz.
-<table width="300">
-  <th>Parametre</th>
-  <th>Anlamı</th>
-  <tr>
-   <td>bulkid</td>
-   <td>başarılı mesaj gönderimlerinizde dönen görevid (bulkid) nizdir.</td>
- </tr>
-  <tr>
-    <td><b> type=0</b> </td>
-    <td> Tek BulkID sorgular.  </td>
-    
-  </tr>
-  <tr>
-    <td><b> type=2</b> </td>
-    <td> İki tarih arasında sorgulama yapar.   </td>
-  </tr>
- <tr>
-<td>bastar</td>
-<td>İki tarih arası sorgulamalarınızda başlangıç tarihidir(ddmmyyyy)</td>
-</tr>
- <tr>
-<td>bittar</td>
-<td>İki tarih arası sorgulamalarınızda bitiş tarihidir(ddmmyyyy) Bütün numaralar birbirlerinden &lt;BR&gt; kodu ile ayrılmiştir.</td>
-</tr>
-  
-
-</table>  
-
- <b>status</b>
-<table>
-<thead>
-<tr>
-<th>Kod</th>
-<th>Anlamı</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>0</code></td>
-<td>İletilmeyi bekleyenler</td>
-</tr>
-<tr>
-<td><code>1</code></td>
-<td>İletilmiş olanlar</td>
-</tr>
-<tr>
-<td><code>2</code></td>
-<td>Zaman aşımına uğramış olanlar</td>
-</tr>
-<tr>
-<td><code>3</code></td>
-<td>Hatalı veya kısıtlı numara</td>
-</tr>
-<tr>
-<td><code>4</code></td>
-<td>Operatöre gönderilemedi</td>
-</tr>
-<tr>
-<td><code>11</code></td>
-<td>Operatör tarafından kabul edilmemiş olanlar</td>
-</tr>
-<tr>
-<td><code>12</code></td>
-<td>Gönderim hatası olanlar</td>
-</tr>
-<tr>
-<td><code>13</code></td>
-<td>Mükerrer olanlar</td>
-</tr>
-<tr>
-<td><code>100</code></td>
-<td>Tüm mesaj durumları</td>
-</tr>
-<tr>
-<td><code>103</code></td>
-<td>Başarısız Görev (Bu görevin tamamı başarısız olmuştur.)</td>
-</tr>
-</tbody>
-</table>
-
-```php
-        use Netgsm\Sms\SmsSend;
-        $sms=new SmsSend;
-        $data=array('bulkid'=>'1311042194','bastar'=>'010220231500','bittar'=>'070220231500','status'=>'100','type'=>2);
-        //bulkid girildiğinde type 0 gönderilmelidir.type=0 girildiğinde bastar ve bittar girilmesine gerek bulunmamaktadır.
-        //bastar ve bittar girildiğinde type 2 gönderilmelidir.
-        $sonuc=$sms->smsSorgulama($data);
-        dd($sonuc);
-        
-```  
-
-#### Başarılı istek sonuç
-```php
-Array
-(
-    [durum] => İletilmiş olanlar
-    [durumcode] => 1
-    [operator] => Türk Telekom
-    [operatorcode] => 20
-    [hataaciklama] => Hata Yok.
-    [hatakod] => 0
-    [cepno] => 9055xxxxxxx
-    [mesajboy] => 1
-    [tarih] => 23.01.2023 09:35:00
-)
-```
-#### Başarısız istek sonuç
-```php
-Array
-(
-    [code] => 60
-    [aciklama] => Arama kriterlerinize göre listelenecek kayıt olmadığını ifade eder.
-)
-```
-
-### GELEN SMS SORGULAMA
-
-Abone numaranıza gelen SMS'leri sorgulayabilirsiniz.
-
-```php
-        use Netgsm\Sms\SmsSend;	
-        $islem=new SmsSend;
-        $data=array('startdate'=>'120120230940','stopdate'=>'230120231400');
-        $sonuc=$islem->gelensms($data);
-        dd($sonuc);
-        
-```
-#### Başarılı istek örnek sonuç
-```php
-Array
-(
-    [0] => Array
-        (
-            [telno] => 553xxxxxxx 
-            [mesaj] =>  mesaj_içerigi
-            [tarih] =>  12.01.2023 09:43:51
-        )
-
-    [1] => Array
-        (
-            [telno] => 553xxxxxxx 
-            [mesaj] =>  mesaj_içerigi
-            [tarih] =>  12.01.2023 09:43:04
-        )
-
-)
-```
-#### Başarısız istek örnek sonuç
-```php
-Array
-(
-    [code] => 60
-    [aciklama] => Arama kiterlerindeki startdate ve stopdate zaman farkının 30 günden fazla olduğunu ifade eder.
-)
-```
-### GELEN SMS WEBHOOK
-
-
-- Abone numaranıza gelen SMS'leri tarafınızda belirleyeceğiniz bir URL adresine anlık olarak post ediyoruz.  
-- Bu işlemi webportaldan <strong>SMS Hizmeti / İnteraktif SMS</strong> menüsündeki <strong>URL Adresine Yönlendir Modülü</strong>e tıklayarak gerçekleştirebilirsiniz.
-- Belirttiğiniz URL adresine yönlendirilecek veri <strong>post</strong> ile gönderilir.
-- Gönderilen post değerleri <strong>ceptel</strong> ve <strong>mesaj</strong> dır.
-
-Belirtmiş olduğunuz URL adresine  aşağıdaki gibi veri gelir.  
-```php
-{
-    "mesaj": "test",
-    "ceptel": "553xxxxxxx",
-    "aboneno": "312xxxxxxx",
-    "gorevid": "112xxx720",
-    "tarih": "2023-02-21 16:28:41.053"
+use Netgsm\Sms\NetgsmClient;
+use Netgsm\Sms\NetgsmException;
+
+$client = new NetgsmClient(getenv('NETGSM_USERNAME'), getenv('NETGSM_PASSWORD'));
+
+try {
+    $result = $client->send(getenv('NETGSM_SENDER'), [
+        ['recipient' => '+905321234567', 'text' => 'Siparişiniz kargoya verildi.'],
+        ['recipient' => '+905321234568', 'text' => 'Siparişiniz hazırlanıyor.'],
+    ], ['encoding' => 'TURKISH']);
+
+    // $result['jobId'] ile rapor sorgulanır.
+    foreach ($result['rejectedItems'] as $item) {
+        // Geçerli kayıtlar gönderildi; bu kayıt reddedildi.
+        error_log("Reddedildi: {$item['recipient']} {$item['reason']}");
+    }
+} catch (NetgsmException $e) {
+    error_log($e->getMessage()); // requestId içerir
 }
 ```
-##### Laravel kullanıyorsanız veriyi aşağıdaki gibi çekebilirsiniz
-```php
 
-    public function index(Request $request)
-    {
-        //
-        $request->ceptel;
-        $request->mesaj;
-        $request->aboneno;
-        $request->gorevid;
-        $request->tarih;
+Numaralar E.164 biçiminde yazılır: `+90` ve 10 rakam (`+905321234567`), yurt dışı için `+` ve ülke kodu
+(`+4915112345678`).
+
+## Token önbelleği
+
+İstemci, kullanıcı adı ve şifreyle bir kez token alır ve süresi dolana kadar bu token'ı kullanır. Token
+alma isteği IP başına dakikada 30 ile sınırlıdır. PHP-FPM'de her web isteği ayrı bir süreç olduğundan,
+token'ın süreçler arasında paylaşılması için bir PSR-16 cache verin:
+
+```php
+$client = new NetgsmClient($username, $password, $cache); // Psr\SimpleCache\CacheInterface
+```
+
+Cache verilmezse token yalnızca nesne yaşadığı sürece bellekte tutulur. Bu, CLI betikleri ve kuyruk
+işçileri için yeterlidir.
+
+### Laravel
+
+`App\Providers\AppServiceProvider` içinde:
+
+```php
+use Illuminate\Support\Facades\Cache;
+use Netgsm\Sms\NetgsmClient;
+
+public function register(): void
+{
+    $this->app->singleton(NetgsmClient::class, fn () => new NetgsmClient(
+        env('NETGSM_USERNAME'),
+        env('NETGSM_PASSWORD'),
+        Cache::store(),
+    ));
+}
+```
+
+Config cache kullanıyorsanız (`php artisan config:cache`) `env()` çağrılarını `config/services.php`
+dosyasına taşıyın ve burada `config('services.netgsm.username')` gibi okuyun.
+
+### Symfony
+
+`config/services.yaml`:
+
+```yaml
+services:
+    netgsm.token_cache:
+        class: Symfony\Component\Cache\Psr16Cache
+        arguments: ['@cache.app']
+
+    Netgsm\Sms\NetgsmClient:
+        arguments:
+            $username: '%env(NETGSM_USERNAME)%'
+            $password: '%env(NETGSM_PASSWORD)%'
+            $cache: '@netgsm.token_cache'
+```
+
+## Metotlar
+
+Bütün metotlar API'nin döndürdüğü JSON'u dizi olarak döndürür. Alanların açıklaması her metodun
+yanındaki resmî doküman sayfasındadır.
+
+| Metot | Uç nokta | Doküman |
+|---|---|---|
+| `send($sender, $messages, $options)` | `POST /sms/v3/send` | [send-sms](https://api-docs.netgsm.com.tr/send-sms/) |
+| `cancel($jobId)` | `POST /sms/v3/cancel` | [cancel-job](https://api-docs.netgsm.com.tr/cancel-job/) |
+| `report($jobIds, $startAt, $stopAt, $page)` | `GET /sms/v3/report` | [read-reports](https://api-docs.netgsm.com.tr/read-reports/) |
+| `inbox($startAt, $stopAt)` | `GET /sms/v3/inbox` | [read-inbox](https://api-docs.netgsm.com.tr/read-inbox/) |
+| `senders()` | `GET /sms/v3/senders` | [list-senders](https://api-docs.netgsm.com.tr/list-senders/) |
+| `blacklist($numbers, $page, $pageTotal)` | `GET /sms/v3/blacklist` | [kara-liste](https://api-docs.netgsm.com.tr/kara-liste/) |
+| `addToBlacklist($numbers)` | `POST /sms/v3/blacklist` | [kara-liste](https://api-docs.netgsm.com.tr/kara-liste/) |
+| `removeFromBlacklist($numbers)` | `DELETE /sms/v3/blacklist` | [kara-liste](https://api-docs.netgsm.com.tr/kara-liste/) |
+| `balance($stip, $service)` | `GET /sms/v3/balance` | [get-balance](https://api-docs.netgsm.com.tr/get-balance/) |
+
+### Gönderim
+
+Bütün alıcılar tek `send()` çağrısında gönderilir; alıcı başına ayrı çağrı yapmayın. Bir istek 1.000.000
+kayda kadar taşır ve her kaydın kendi metni olabilir.
+
+```php
+$client->send('BASLIGINIZ', $messages, [
+    'encoding'    => 'TURKISH',                       // DEFAULT, TURKISH, UNICODE
+    'iysFilter'   => 'BRAND',                         // ticari iletide İYS filtresi; bilgilendirmede NONE
+    'startAt'     => new DateTimeImmutable('+1 hour'),
+    'stopAt'      => new DateTimeImmutable('+5 hours'),
+    'referenceId' => 'siparis-4711',
+]);
+```
+
+Yanıttaki `status` `SCHEDULED` ise görev başlangıç zamanına kadar `cancel()` ile iptal edilebilir;
+`QUEUED` ise gönderim başlamıştır.
+
+### Rapor
+
+```php
+$tz = new DateTimeZone('Europe/Istanbul');
+$page = $client->report([$jobId], new DateTimeImmutable('today', $tz), new DateTimeImmutable('now', $tz));
+```
+
+Sayfa başına en fazla 100 satır döner. Aynı görev dakikada bir sorgulanabilir. Raporu henüz gelmemiş
+alıcılar listede yer almaz.
+
+### Gelen SMS
+
+```php
+$inbox = $client->inbox(new DateTimeImmutable('-1 day'), new DateTimeImmutable());
+```
+
+Tarih verilmezse içinde bulunulan ay döner. Yanıttaki `sender` alanı şu an yurt içi numaraları `90` öneki
+olmadan döndürür (`5321234567`).
+
+### Kara liste
+
+```php
+$client->blacklist();                              // liste, sayfa 0, sayfa başına 200
+$client->blacklist(['+905321234567']);             // numara listede mi
+$client->addToBlacklist(['+905321234567']);
+$client->removeFromBlacklist(['+905321234567']);
+```
+
+Ekleme ve silme istek başına en fazla 100 numara alır.
+
+### Bakiye
+
+```php
+$balance = $client->balance(3);
+```
+
+Büyük bir gönderimden önce bir kez sorgulayın; her mesajdan önce sorgulamayın. `Kredi Bakiye` değeri
+virgüllü bir metindir (`"92,150"`, yani 92,15 TL).
+
+## Hata yönetimi
+
+API hata döndürdüğünde ya da yanıt alınamadığında `Netgsm\Sms\NetgsmException` fırlatılır.
+
+| Alan | Açıklama |
+|---|---|
+| `status` | HTTP durum kodu. Yanıt alınamadıysa `0`. |
+| `errorCode` | API'nin hata kodu: `REJECTED_HEADER`, `INVALID_REQUEST`, `RATE_LIMITED`, `invalid_credentials` vb. Yanıt alınamadıysa `NETWORK_ERROR`. |
+| `requestId` | Destek talebinde paylaşılacak istek kimliği. |
+| `retryAfter` | 429 yanıtında kaç saniye sonra tekrar denenebileceği. |
+| `mayHaveBeenQueued` | Gönderimde sunucu hatası ya da bağlantı hatası olduysa `true`. |
+| `violations` | 400 yanıtında hangi alanın neden reddedildiği. |
+| `rejectedItems` | 422 `NO_DELIVERABLE_MESSAGES` yanıtında reddedilen kayıtlar ve nedenleri. |
+
+Hata mantığını HTTP durum koduna değil `errorCode` alanına göre kurun. Kodların tamamı ve anlamları:
+[api-docs.netgsm.com.tr](https://api-docs.netgsm.com.tr/).
+
+```php
+try {
+    $client->send($sender, $messages);
+} catch (NetgsmException $e) {
+    if ($e->mayHaveBeenQueued) {
+        // Gönderim oluşmuş olabilir. Aynı isteği tekrar göndermek ikinci bir gönderim oluşturur;
+        // önce report() ile kontrol edin.
+    } elseif ($e->errorCode === 'RATE_LIMITED' && $e->retryAfter !== null) {
+        // $e->retryAfter saniye sonra tekrar deneyin.
+    } elseif ($e->errorCode === 'RATE_LIMITED') {
+        // Retry-After yok: hesabın gönderimi askıya alınmış. Beklemek işe yaramaz, destek ekibine başvurun.
+    } else {
+        // 400, 403, 422: istek ya da hesap düzeltilmeden tekrar denemeyin.
     }
-
-```
-##### Symfony kullanıyorsanız veriyi aşağıdaki gibi çekebilirsiniz
-```php
-    use Symfony\Component\HttpFoundation\Request;
-    public function index(Request $request)
-    {
-    
-        
-        $request->get('ceptel');
-        $request->get('mesaj');
-        $request->get('aboneno');
-        $request->get('gorevid');
-        $request->get('tarih');
-        
-     }
-
+}
 ```
 
-### BAŞLIK(GÖNDERİCİ ADI) SORGULAMA  
-Hesabınızda tanımlı gönderici adlarını(mesaj başlığı)  sorgulama modülüdür. 
+İstemci yalnızca bir durumda kendiliğinden tekrar dener: token geçersiz olduğunda (401) bir kez yeniden
+giriş yapar ve isteği bir kez tekrarlar. Başka hiçbir isteği tekrarlamaz ve beklemez.
+
+## Güvenlik
+
+- Şifre yalnızca token alırken HTTPS üzerinden istek gövdesinde gönderilir. Diğer isteklerde
+  `Authorization: Bearer` başlığı kullanılır.
+- TLS sertifika doğrulaması her zaman açıktır ve kapatılamaz. Sunucunuzun CA paketi eskiyse güncelleyin
+  ya da bir CA paketi yolu verin:
+
+  ```php
+  use Netgsm\Sms\Http\CurlTransport;
+
+  $client = new NetgsmClient($username, $password, $cache, NetgsmClient::BASE_URL, new CurlTransport(caBundle: '/etc/ssl/cacert.pem'));
+  ```
+
+- `http://` adresi yalnızca yerel test sunucusu (`127.0.0.1`, `localhost`) için kabul edilir.
+- Şifre ve token, hata mesajlarına ve `var_dump()` / `print_r()` çıktısına girmez.
+
+## Test
+
+Gerçek hesabınızı kullanmadan denemek için Netgsm'in SMS göndermeyen sandbox ortamını kullanabilirsiniz:
 
 ```php
-        use Netgsm\Sms\SmsSend;
-        $baslik=new SmsSend;
-        $sonuc=$baslik->basliksorgu();
-        dd($sonuc);
-       
+$client = new NetgsmClient('8500000000', '<sandbox şifresi>', null, 'https://ext-sandbox.netgsm.com.tr');
 ```
-#### Başarılı istek örnek sonuç
-```php
-Array
-(
-    [msgheader] => Array
-        (
-            [0] => 850xxxxxxx
-            [1] => HEADER_BILGISI
-        )
 
-)
+Demo hesaplar ve şifreler:
+[SMS API v3 sandbox](https://api-docs.netgsm.com.tr/sandbox/sms-api-v-3-sandbox/).
+
+Paketin kendi testleri:
+
+```bash
+composer install
+composer test
 ```
-#### Başarısız istek örnek sonuç
-```php
-Array
-(
-    [code] => 30
-    [error] => Kullanici bilgisi bulunamadi
-)
-```
-### Kara Liste
 
-Blacklist olarak da bilinen SMS gönderimi istenmeyen yasaklı numaralar listeniz için, belirlediğiniz numaraları Kara Listeye Ekleme / Kara Listeden Çıkarma modülünü kullanabilirsiniz. Kara Listede bulunan numaralara hesabınızdan SMS gönderilmez.Bu kontrol Netgsm tarafında sağlanır.  
+## v2'den v3'e geçiş
 
-<table width="300">
-  <th>Parametre</th>
-  <th>Anlamı</th>
-  <tr>
-    <td><b> tip</b> </td>
-    <td>1 değeri ile Kara listeye ekleme, 2 değeri ile Kara listeden çıkarma işlemi gerçekleşir. İstek yapılırken gönderilmesi zorunludur. </td>
-    
-  </tr>
-  
-  
- 
-</table>  
+v3, Netgsm'in eski API'si yerine SMS API v3'ü kullanır. Sınıf, metotlar, parametreler ve dönüş biçimi
+değişti. v2'de kalmak isteyenler `"netgsm/sms": "^2.0"` kısıtını korur.
 
-```php
-        use Netgsm\Sms\SmsSend;
-       	$karaliste=new SmsSend;
-        $data=array('number'=>['553xxxxxxx','553xxxxxxx'],'tip'=>2);
-        $sonuc=$karaliste->karaliste($data);
-        dd($sonuc);
+| v2 | v3 |
+|---|---|
+| `new SmsSend()` (`$_ENV` okur) | `new NetgsmClient($username, $password, $cache)` |
+| `NETGSM_USERCODE`, `NETGSM_PASSWORD` | Abone numarası ve API alt kullanıcısı şifresi, constructor'a verilir |
+| `NETGSM_HEADER` | `send()` metodunun ilk parametresi (`$sender`) |
+| `smsGonder()` (1:n), `smsGonderNN()` (n:n), `smsgonder1_1()` | `send()`: her kayıt `['recipient' => ..., 'text' => ...]` |
+| `smsSorgulama()` | `report()` |
+| `gelensms()` | `inbox()` |
+| `basliksorgu()` | `senders()` |
+| `karaliste()` ekleme / çıkarma | `addToBlacklist()` / `removeFromBlacklist()`; sorgu için `blacklist()` |
+| — | `cancel()`, `balance()` |
 
-```  
-#### Başarılı istek örnek sonuç
-```php
-Array
-(
-    [code] => OK
-    [aciklama] => Kara Listeye Ekleme / Çıkarma işleminde bir hata olmadığını gösterir.
-)
-```
-#### Başarısız istek örnek sonuç
-```php
-Array
-(
-    [code] => 60
-    [aciklama] => Geçersiz tip gönderimi
-)
-```
+Parametreler:
+
+| v2 | v3 |
+|---|---|
+| `no`, `gsm` (`5xx`, `05xx`, `905xx`) | `recipient`, E.164: `+905321234567` |
+| `encoding` = `TR` | `encoding` = `TURKISH` |
+| `startdate`, `stopdate` (`ddMMyyyyHHmm`) | `startAt`, `stopAt` (`DateTimeInterface`) |
+| `filter` | `iysFilter`: `NONE`, `BRAND`, `RETAILER`, `BRAND_AND_RETAILER` |
+| `bayikodu` | `partnerCode` |
+| `bulkid` | `jobId` |
+
+Davranış farkları:
+
+- **Görev numarası:** `jobId` en fazla 64 karakterlik bir metindir (ör. `179309912974612345062827`).
+  `bulkid` değerini sayı kolonunda (`INT`, `BIGINT`) tutuyorsanız kolonu metne çevirin.
+- **Dönüş biçimi:** Sonuçlar artık `code` / `aciklama` dizisi değildir. Başarılı yanıt API'nin JSON'udur,
+  hatalar `NetgsmException` olarak gelir.
+- **Kısmi gönderim:** Hatalı numaralar ayıklanır, geçerli olanlar gönderilir. Reddedilenler
+  `rejectedItems` içinde döner.
+- **Gelen SMS:** v2'de tarih vermeden sorgu yalnızca okunmamış mesajları bir kez listeliyordu. v3'te tarih
+  verilmezse içinde bulunulan ayın bütün mesajları döner.
+- **Rapor sınırı:** Aynı görev dakikada bir sorgulanabilir. Sürekli takip için rapor webhook'u
+  önerilir: [register-report-webhook](https://api-docs.netgsm.com.tr/register-report-webhook/).
+
+## Destek
+
+- API dokümanı: https://api-docs.netgsm.com.tr/
+- Bilgi Bankası: https://bilgibankasi.netgsm.com.tr/
+- Teknik destek: teknikdestek@netgsm.com.tr (hata bildirirken `requestId` değerini ekleyin)
+
+## Lisans
+
+MIT

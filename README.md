@@ -12,7 +12,7 @@ projelerinde kullanılabilir.
 - PHP 8.1 veya üzeri, `ext-curl` ve `ext-json`
 - SMS API v3 erişimi açık bir Netgsm hesabı: abone numarası, API alt kullanıcısı şifresi ve onaylı bir
   gönderici adı (başlık). Hesap ayarları için:
-  [Bilgi Bankası, API ile SMS](https://bilgibankasi.netgsm.com.tr/sms/toplu-sms/api-ile-sms)
+  [Bilgi Bankası, API ile SMS](https://bilgibankasi.netgsm.com.tr/toplu-sms/api-ile-sms)
 
 ## Kurulum
 
@@ -157,8 +157,8 @@ alıcılar listede yer almaz.
 $inbox = $client->inbox(new DateTimeImmutable('-1 day'), new DateTimeImmutable());
 ```
 
-Tarih verilmezse içinde bulunulan ay döner. Yanıttaki `sender` alanı şu an yurt içi numaraları `90` öneki
-olmadan döndürür (`5321234567`).
+Tarih verilmezse içinde bulunulan ay döner. Aralık en fazla 2 ay olabilir. Yanıt en fazla 500 mesaj taşır;
+`truncated` `true` ise aralığı daraltarak tekrar sorgulayın.
 
 ### Kara liste
 

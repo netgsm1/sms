@@ -9,7 +9,7 @@ projelerinde kullanılabilir.
 
 ## Gereksinimler
 
-- PHP 8.1 veya üzeri, `ext-curl` ve `ext-json`
+- PHP 8.2 veya üzeri, `ext-curl` ve `ext-json`
 - SMS API v3 erişimi açık bir Netgsm hesabı: abone numarası, API alt kullanıcısı şifresi ve onaylı bir
   gönderici adı (başlık). Hesap ayarları için:
   [Bilgi Bankası, API ile SMS](https://bilgibankasi.netgsm.com.tr/toplu-sms/api-ile-sms)
@@ -231,7 +231,15 @@ giriş yapar ve isteği bir kez tekrarlar. Başka hiçbir isteği tekrarlamaz ve
   ```
 
 - `http://` adresi yalnızca yerel test sunucusu (`127.0.0.1`, `localhost`) için kabul edilir.
-- Şifre ve token, hata mesajlarına ve `var_dump()` / `print_r()` çıktısına girmez.
+- Şifre ve token; hata mesajlarına, stack trace argümanlarına ve `var_dump()` / `print_r()` çıktısına
+  girmez.
+- `NetgsmClient` serialize edilemez; `serialize()` `LogicException` fırlatır. İstemciyi kuyruk işi
+  (queue job) gibi serialize edilen bir nesnenin property'sinde tutmayın; kullanıldığı yerde enjekte edin.
+  Laravel'de job'ın `handle(NetgsmClient $client)` metoduna parametre olarak alın.
+- Kendi `Transport` sınıfınızı yazarsanız `send()` metodunun `$headers` ve `$body` parametrelerini
+  `#[\SensitiveParameter]` ile işaretleyin; bu parametreler token'ı ve şifreyi taşır.
+- Token'ı paylaşılan bir cache'te tutuyorsanız o cache'e erişebilen herkes token'ı kullanabilir. Cache
+  sunucusunu (Redis, Memcached vb.) dış erişime kapalı tutun.
 
 ## Test
 

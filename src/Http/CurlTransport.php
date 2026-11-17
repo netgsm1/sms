@@ -20,8 +20,12 @@ final class CurlTransport implements Transport
     ) {
     }
 
-    public function send(string $method, string $url, array $headers, ?string $body): array
-    {
+    public function send(
+        string $method,
+        string $url,
+        #[\SensitiveParameter] array $headers,
+        #[\SensitiveParameter] ?string $body,
+    ): array {
         $responseHeaders = [];
         $ch = curl_init($url);
 

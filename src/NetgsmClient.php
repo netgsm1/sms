@@ -6,6 +6,7 @@ namespace Netgsm\Sms;
 
 use DateTimeInterface;
 use InvalidArgumentException;
+use LogicException;
 use Netgsm\Sms\Http\CurlTransport;
 use Netgsm\Sms\Http\Transport;
 use Psr\SimpleCache\CacheInterface;
@@ -206,6 +207,23 @@ final class NetgsmClient
     }
 
     /**
+     * Serializing would write the password in plain text, e.g. into a queue payload.
+     * Inject the client where it is used instead of storing it on a serialized object.
+     */
+    public function __serialize(): array
+    {
+        throw new LogicException('NetgsmClient cannot be serialized because it holds credentials.');
+    }
+
+    /**
+     * @param array<mixed> $data
+     */
+    public function __unserialize(array $data): void
+    {
+        throw new LogicException('NetgsmClient cannot be unserialized.');
+    }
+
+    /**
      * @param array<string, mixed>|null       $body
      * @param array<string, string|int|null> $query
      *
@@ -269,7 +287,7 @@ final class NetgsmClient
         return $entry['token'];
     }
 
-    private function forgetToken(string $token): void
+    private function forgetToken(#[\SensitiveParameter] string $token): void
     {
         if ($this->cache === null) {
             $this->memoryToken = null;
@@ -294,12 +312,19 @@ final class NetgsmClient
      *
      * @return array{status: int, headers: array<string, string>, body: string}
      */
-    private function transmit(string $method, string $url, array $headers, ?string $payload, bool $mayQueue): array
-    {
+    private function transmit(
+        string $method,
+        string $url,
+        #[\SensitiveParameter] array $headers,
+        #[\SensitiveParameter] ?string $payload,
+        bool $mayQueue,
+    ): array {
         try {
             return $this->transport->send($method, $url, $headers, $payload);
         } catch (RuntimeException $e) {
-            throw new NetgsmException('Netgsm request failed: ' . $e->getMessage(), 0, 'NETWORK_ERROR', mayHaveBeenQueued: $mayQueue, previous: $e);
+            // The transport exception is not chained: its trace holds the transport's arguments, which carry
+            // the password or the access token unless that Transport marks them #[\SensitiveParameter].
+            throw new NetgsmException('Netgsm request failed: ' . $e->getMessage(), 0, 'NETWORK_ERROR', mayHaveBeenQueued: $mayQueue);
         }
     }
 
@@ -308,7 +333,7 @@ final class NetgsmClient
      *
      * @return array<string, mixed>
      */
-    private function decode(array $response, bool $mayQueue): array
+    private function decode(#[\SensitiveParameter] array $response, bool $mayQueue): array
     {
         $status = $response['status'];
         $data = json_decode($response['body'], true);

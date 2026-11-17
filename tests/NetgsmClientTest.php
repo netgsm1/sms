@@ -7,9 +7,12 @@ namespace Netgsm\Sms\Tests;
 use DateTimeImmutable;
 use DateTimeZone;
 use InvalidArgumentException;
+use LogicException;
+use Netgsm\Sms\Http\CurlTransport;
 use Netgsm\Sms\NetgsmClient;
 use Netgsm\Sms\NetgsmException;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class NetgsmClientTest extends TestCase
 {
@@ -269,6 +272,70 @@ final class NetgsmClientTest extends TestCase
     public function testDebugOutputHidesPassword(): void
     {
         self::assertStringNotContainsString('secret', print_r($this->client(), true));
+    }
+
+    public function testClientCannotBeSerialized(): void
+    {
+        $this->expectException(LogicException::class);
+        serialize($this->client());
+    }
+
+    public function testNetworkErrorKeepsPasswordAndTokenOutOfTrace(): void
+    {
+        $previous = ini_set('zend.exception_ignore_args', '0');
+        $this->transport->queueFailure()->queueToken('token-value-123')->queueFailure();
+        $client = $this->client();
+
+        try {
+            $loginError = $this->catch(fn () => $client->senders());
+            $requestError = $this->catch(fn () => $client->senders());
+        } finally {
+            ini_set('zend.exception_ignore_args', (string) $previous);
+        }
+
+        foreach ([$loginError, $requestError] as $e) {
+            self::assertNull($e->getPrevious());
+            $trace = self::packageFrames($e);
+            self::assertStringContainsString('transmit', $trace);
+            self::assertStringNotContainsString('secret', $trace);
+            self::assertStringNotContainsString('token-value-123', $trace);
+        }
+    }
+
+    /**
+     * Frames of the package's own code. Test and PHPUnit frames are left out: they carry the test case,
+     * whose FakeTransport records every request it was given.
+     */
+    private static function packageFrames(\Throwable $e): string
+    {
+        $frames = array_filter(
+            $e->getTrace(),
+            static fn (array $frame) => str_starts_with($frame['class'] ?? '', 'Netgsm\\Sms\\')
+                && !str_starts_with($frame['class'], 'Netgsm\\Sms\\Tests\\'),
+        );
+        self::assertNotEmpty($frames);
+        foreach ($frames as $frame) {
+            self::assertArrayHasKey('args', $frame, 'trace arguments were not captured');
+        }
+
+        return var_export(array_values($frames), true);
+    }
+
+    public function testCurlTransportKeepsHeadersAndBodyOutOfTrace(): void
+    {
+        $previous = ini_set('zend.exception_ignore_args', '0');
+        try {
+            // Port 1 on loopback refuses the connection immediately; no external request is made.
+            (new CurlTransport(timeout: 5, connectTimeout: 5))->send('POST', 'http://127.0.0.1:1/', ['Authorization: Bearer token-value-123'], '{"password":"secret"}');
+            self::fail('Expected a connection error');
+        } catch (RuntimeException $e) {
+            $trace = self::packageFrames($e);
+            self::assertStringContainsString('CurlTransport', $trace);
+            self::assertStringNotContainsString('secret', $trace);
+            self::assertStringNotContainsString('token-value-123', $trace);
+        } finally {
+            ini_set('zend.exception_ignore_args', (string) $previous);
+        }
     }
 
     private function catch(callable $fn): NetgsmException
